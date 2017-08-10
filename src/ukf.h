@@ -11,6 +11,50 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 class UKF {
+private:
+  
+  // No. of Sigma Pts.
+  int n_sigma_pts_;
+
+  //Augmented mean vector
+  VectorXd x_aug_;
+
+  //Augmented state covariance
+  MatrixXd P_aug_;
+
+  // Sigma Augumentation points
+  MatrixXd Xsig_aug_;
+
+  // Radar Measurment Sigma points
+  MatrixXd Zsig_;
+
+  // Radar measurment predicted mean
+  VectorXd z_pred_;
+
+  // Measurment predicted covariance
+  MatrixXd S_;
+
+  // Radar Measurement noise covariance matrix
+  MatrixXd R_radar_;
+  
+  // Laser Measurement noise covariance matrix
+  MatrixXd R_lidar_;
+
+  void generateSigmaPoints();
+
+  void predictSigmaPoints(double delta_t);
+
+  void predictMeasurment(MatrixXd R);
+
+  /**
+   * Updates the state and the state covariance matrix using a measurment Zsig
+   * @param meas_package The measurement at k+1
+   */
+  void UpdateMeasurment(MeasurementPackage meas_package);
+  
+  long previous_timestamp_;
+
+
 public:
 
   ///* initially set to false, set to true in first call of ProcessMeasurement
@@ -64,8 +108,17 @@ public:
   ///* Augmented state dimension
   int n_aug_;
 
+  // Radar Measurement dimension, radar can measure r, phi, and r_dot
+  int n_z;
+
   ///* Sigma point spreading parameter
   double lambda_;
+  
+  // NIS value of Lidar
+  double NIS_lidar;
+  
+  // NIS value of Radar
+  double NIS_radar;
 
 
   /**
@@ -102,6 +155,7 @@ public:
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+
 };
 
 #endif /* UKF_H */

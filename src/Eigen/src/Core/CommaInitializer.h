@@ -15,7 +15,7 @@ namespace Eigen {
 
 /** \class CommaInitializer
   * \ingroup Core_Module
-  *
+  *`
   * \brief Helper class used by the comma initializer operator
   *
   * This class is internally used to implement the comma initializer feature. It is

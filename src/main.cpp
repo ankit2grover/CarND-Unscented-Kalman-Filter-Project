@@ -4,6 +4,7 @@
 #include <math.h>
 #include "ukf.h"
 #include "tools.h"
+#include <iostream>
 
 using namespace std;
 
@@ -37,8 +38,10 @@ int main()
   Tools tools;
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
+  ofstream nisFile;
+  nisFile.open("nisdata.txt");
 
-  h.onMessage([&ukf,&tools,&estimations,&ground_truth](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
+  h.onMessage([&ukf,&tools,&estimations,&ground_truth, &nisFile](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
     // The 2 signifies a websocket event
@@ -65,7 +68,6 @@ int main()
     	  // reads first element from the current line
     	  string sensor_type;
     	  iss >> sensor_type;
-
     	  if (sensor_type.compare("L") == 0) {
       	  		meas_package.sensor_type_ = MeasurementPackage::LASER;
           		meas_package.raw_measurements_ = VectorXd(2);
@@ -90,7 +92,7 @@ int main()
           		iss >> timestamp;
           		meas_package.timestamp_ = timestamp;
           }
-          float x_gt;
+        float x_gt;
     	  float y_gt;
     	  float vx_gt;
     	  float vy_gt;
@@ -139,7 +141,14 @@ int main()
           auto msg = "42[\"estimate_marker\"," + msgJson.dump() + "]";
           // std::cout << msg << std::endl;
           ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
-	  
+          double nis;
+          if (sensor_type.compare("L") == 0) {
+            nis = ukf.NIS_lidar;
+          } else {
+            nis = ukf.NIS_radar;
+          }
+          std::cout << "NIS:" << nis << endl;
+          nisFile << nis << "\n";
         }
       } else {
         
@@ -149,6 +158,7 @@ int main()
     }
 
   });
+  
 
   // We don't need this since we're not using HTTP but if it's removed the program
   // doesn't compile :-(
@@ -185,6 +195,7 @@ int main()
     return -1;
   }
   h.run();
+  nisFile.close();
 }
 
 
